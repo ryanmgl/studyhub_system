@@ -6,8 +6,8 @@ if(!isset($_GET['id'])){
   exit;
 }
 
-$sessionID = intval($_GET['id']);
-$res = $conn->query("SELECT status FROM session where id = $sessionId");
+$sessionId = intval($_GET['id']);
+$res = $conn->query("SELECT status FROM session WHERE id = $sessionId");
 
 if($res && $row = $res->fetch_assoc()){
   echo json_encode(["status" => $row["status"]]);

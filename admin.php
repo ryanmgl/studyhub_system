@@ -9,8 +9,8 @@ if(!isset($_SESSION['admin_logged_in'])) {
 
 <?php
 $conn = new mysqli("localhost", "root", "", "studyhub");
-if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['user_name'])){
-  $newUser = trim($_POST['user_name']);
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username'])){
+  $newUser = trim($_POST['username']);
   if($newUser != ""){
     $newType = $_POST['user_type'];
     $stmt = $conn->prepare("INSERT IGNORE INTO users (username, type)VALUES (?,?)");
@@ -39,13 +39,13 @@ if(isset($_GET['delete_user'])){
   <link rel = "stylesheet" href = "style_admin.php">
 </head>
 <body>
-<a href = "admin_login.php">Logout</a>
+<a href = "logout_admin.php">Logout</a>
 
 <div>
   <div>
   <form method = "post">
     <h1>Register User</h1>
-    <input type = "text" name = "user_name" placeholder="Enter name" required>
+    <input type = "text" name = "username" placeholder="Enter name" required>
     <select name = "user_type">
       <option value="basic">Basic</option>
       <option value="vip">VIP</option>
@@ -63,13 +63,32 @@ if(isset($_GET['delete_user'])){
         <th>Id</th>
         <th>Username</th>
         <th>Type</th>
+        <th>Time Plan</th>
         <th>Study Table</th>
         <th>Time Remaining</th>
         <th>End</th>
       </tr>
       </thead>
+      <tbody id ='sessionTable'>
+
+      </tbody>
     </table>
   </div>
+
+<script>
+
+function loadSessions(){
+  fetch_sessions()
+    .then(res->res.text())
+    .then(data =>{
+      document.getElementById('sessionTable').innerHTML = data;
+    })
+    .catch(err =>{
+      console.error('Fetch error:',error);
+      document.getElementById('sessionTable').innerHTML = '<tr><td colspan = "7"> Failed to load session data.</td></tr>';
+    });
+  }
+</script>
 
   <div>
     <h1>Remove User</h1>

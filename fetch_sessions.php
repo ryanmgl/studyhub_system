@@ -8,7 +8,7 @@ if($conn->connect_error){
 $query = $conn->query("
           SELECT s.*,u.type
           FROM sessions s
-          LEFT JOIN users u ON s.user_name = u.username
+          LEFT JOIN users u ON s.username = u.username
           WHERE status = 'in_use'
           ");
 
@@ -31,7 +31,7 @@ while($row = $query->fetch_assoc()){
 
 echo "<tr>";
 echo "<td>". $row['id']. "</td>";
-echo "<td>". htmlspecialchars($row['user_name']). "</td>";
+echo "<td>". htmlspecialchars($row['username']). "</td>";
 echo "<td>". htmlspecialchars($row['type']). "</td>";
 echo "<td>". htmlspecialchars($row['time_plan'])."mins. </td>";
 echo "<td>". htmlspecialchars($row['study_table']). "</td>";

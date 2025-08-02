@@ -12,101 +12,110 @@ if($conn->connect_error){
 }
 
 if(isset($_GET['end'])){
-  $session_id = $_GET['end'];
+  $sessionId = $_GET['end'];
   $stmt = $conn->prepare("SELECT * FROM sessions WHERE id = ?");
-  $stmt->bind_param("i",$session_id);
+  $stmt->bind_param("i",$sessionId);
   $stmt->execute();
   $result = $stmt->get_result();
-if($result && $result->num_rows >0){
-  $row = $result ->fetch_assoc();
-  
-  if($row['status'] == 'in_use'){
-    $end_time = date("y-m-d-h-i-s");
-    $stmt = $conn->prepare("UPDATE sessions SET status ='ended',end_time = ? WHERE id = ?");
-    $stmt->bind_param("si", $end_time, $row['id']);
-    $stmnt->execute();
-  }
-  
-  $start = new DateTime($row['start_time']);
-  $now = new DateTime();
-  $end = new DateTime();
-  if($row['end_time']){
-    $end = new DateTime($row['end_time']);
-  }
-  $elapsed = floor(($end->getTimestamp()) - ($start->getTimestamp()));
-  if($elapsed > $row['time_plan']) $elapsed = $row['time_plan'];
 
-  $getType = $conn->prepare("SELECT type FROM users WHERE username = ?");
-  $getType->bind_param("s", $row['username']);
-  $getType->execute();
-  $typeRow = $getType->get_result();
-  $typeRow = $typeRow->fetch_assoc();
-  $userType = $typeRow ? $typeRow['type'] : 'basic';
+  if($result->num_rows >0){
+    $row = $result ->fetch_assoc();
+    
+    if($row['status'] == 'in_use'){
+      $end_time = date("Y-m-d H:i:s");
+      $stmt = $conn->prepare("UPDATE sessions SET status ='ended',end_time = ? WHERE id = ?");
+      $stmt->bind_param("si", $end_time, $row['id']);
+      $stmt->execute();
+    }
+    
+    $start = new DateTime($row['start_time']);
+    $now = new DateTime();
+    $end = new DateTime();
 
-  $rate = ($userType =='basic')? 0.5 : 0.4;
-  $cost = $rate * $elapsed;
+      if($row['end_time']){
+        $end = new DateTime($row['end_time']);
+      }
+      $elapsed = floor(($end->getTimestamp() - $start->getTimestamp())/60);
+      
+      if($elapsed > $row['time_plan']) $elapsed = $row['time_plan'];
 
-  $receipt ="
-  <!DOCTYPE html>
-  <html lang = 'en'> 
-  <head>  
-    <meta charset = 'UTF-8'>
-    <title> Receipt</title>
-    <link rel = 'stylesheet' href = 'style_user. css'>
-  </head>
-  <body>
-    <div>
-      <h2>Session Receipt</h2>
-      <div class = 'receipt_details'>
-        <p><strong>User:</strong>".htmlspecialchars($row['user_name'])."</p>
-        <p><strong>Study Table No.:</strong>".htmlspecialchars($row['study_table'])."</p>
-        <p>Time Used: <strong>" .$elapsed."</strong></p>
-        <p>Total Cost:".number_format($cost, 2)."</p>
-        <a href='user.php'>Start a new session</a>
+    $getType = $conn->prepare("SELECT type FROM users WHERE username = ?");
+    $getType->bind_param("s", $row['username']);
+    $getType->execute();
+    $typeRow = $getType->get_result();
+    $typeRow = $typeRow->fetch_assoc();
+    $userType = $typeRow ? $typeRow['type'] : 'basic';
+
+    $rate = ($userType =='basic')? 0.5 : 0.4;
+    $cost = $elapsed * $rate;
+
+    $receipt ="
+    <!DOCTYPE html>
+    <html lang = 'en'> 
+    <head>  
+      <meta charset = 'UTF-8'>
+      <title> Receipt</title>
+      <link rel = 'stylesheet' href = 'style_user. css'>
+    </head>
+    <body>
+      <div>
+        <h2>Session Receipt</h2>
+        <div class = 'receipt_details'>
+          <p><strong>User:</strong>".htmlspecialchars($row['username'])."</p>
+          <p><strong>Study Table No.:</strong>".htmlspecialchars($row['study_table'])."</p>
+          <p><strong>Time Used:</strong> ". $elapsed . ' '.(($elapsed == 0 || $elapsed == 1) ? 'minute':'minutes')."</p>
+          <p>Total Cost: ₱".number_format($cost, 2)."</p>
+          <a href='user.php'>Start a new session</a>
+        </div>
       </div>
-    </div>
 
-  </body>
+    </body>
 
-  </html>
-  ";
-  $sessionEnded = true;
-  }
+    </html>
+    ";
+    $sessionEnded = true;
+    }
 }
 
 //start a session
-if($_SERVER['REQUEST_METHOD'] == "POST"){
+if($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['username'], $_POST['study_table'], $_POST['time_plan'])){
   $user = trim($_POST['username']);
-}
+  $studytable = $_POST['study_table'];
+  $plan = $_POST['time_plan'];
+
 
 //check if registered
 $checkRegistered = $conn->prepare("SELECT * FROM users WHERE username = ?");
 $checkRegistered->bind_param("s", $user);
 $checkRegistered->execute();
+$checkResult = $checkRegistered->get_result();
 
-if($checkRegistered === "0"){
+if($checkResult->num_rows === 0){
   echo "User is not registered";
   exit();
 }
 
-//check if pc is in use
-$studytable = $_POST['study_table'];
-$plan = $_POST['time_plan'];
-
-$checkST = $conn->prepare("SELECT * FROM sessions WHERE study_table = ? AND status ='in_use'");  //finds study table passed that is in use
+//check if study table is in use
+$checkST = $conn->prepare("SELECT * FROM sessions WHERE study_table = ? AND status = 'in_use'");  //finds study table passed that is in use
 $checkST->bind_param("s", $studytable);
 $checkST->execute();
 $result_check_st = $checkST->get_result();
 
 if($result_check_st->num_rows > 0){ //if any exists
-  echo "The table is already in use!";
-  exit();
+  $curr_session = $result_check_st->fetch_assoc();
+  if($curr_session['username'] !=$user){
+    echo "<script>
+    alert('The table is already in use.');
+    window.location.href = 'user.php';
+    </script>";
+    exit;
+  }
 }
 
-$start = date("Y-m-d-h-i-s");
+$start = date("Y-m-d H:i:s");
 $status = 'in_use';
 //insert form info to sql
-$stmt = $conn->prepare("INSERT INTO sessions (user_name, time_plan, study_table, start_time, status) VALUES (?,?,?,?,?)");
+$stmt = $conn->prepare("INSERT INTO sessions (username, time_plan, study_table, start_time, status) VALUES (?,?,?,?,?)");
 $stmt->bind_param("sssss", $user, $plan, $studytable, $start, $status);
 
 //display of running timer
@@ -123,13 +132,14 @@ if ($stmt->execute()){
   <meta charset = 'UTF-8'>
   <title>Session Timer</title>
   <link rel = 'stylesheet' href = 'style_user.css'>
+</head>
 <body>
   <div class = 'session_timer_box'>
     <h2>Session Running</h2>
-    <p><strong>Welcome, </strong><? htmlspecialchars(string: $user)?></p>
-    <p><strong>Study Table: </strong><?htmlspecialchars(string: $studytable) ?> <strong>Plan: </strong> <?htmlspecialchars(string: $planMins) ?></p>
+    <p><strong>Welcome, </strong><?= htmlspecialchars($user)?></p>
+    <p><strong>Study Table: </strong><?= htmlspecialchars($studytable) ?> | <strong>Plan: </strong> <?=htmlspecialchars($planMins) ?></p>
     <div id = 'timer'></div>
-    <a href = 'user.php?end=<?=$session_id?>' class ='end_button'>End Session Now</a>
+    <a href = 'user.php?end=<?=$sessionId?>' class ='end_button'>End Session Now</a>
   </div>
 
   <script>
@@ -178,6 +188,7 @@ if ($stmt->execute()){
   exit;
     }else{
       echo "<p style='color:red;'>Failed to insert session: " . $stmt->error . "</p>";
+  }
 } ?>
 
 <?php if($_SERVER["REQUEST_METHOD"] != "POST" && !$sessionEnded): ?>
@@ -191,7 +202,7 @@ if ($stmt->execute()){
     <form method = 'post'>
       Username: <input type="text" name ="username" required><br><br>
       Choose your time plan:
-      <select name = 'time' required>
+      <select name = 'time_plan' required>
         <option value ='' selected hidden>Choose your time plan</option>
         <option value ='30'>30 minutes</option>
         <option value ='60' >1 hour</option>

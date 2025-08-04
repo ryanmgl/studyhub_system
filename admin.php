@@ -30,6 +30,16 @@ if(isset($_GET['delete_user'])){
   }
 
 }
+
+if(isset($_GET['end'])){
+  $endId = $_GET['end'];
+  $end_stmt = $conn->prepare("UPDATE sessions SET st_status = 'ended', end_time = NOW() WHERE id = ?");
+  $end_stmt->bind_param("i", $endId);
+  
+  if($end_stmt->execute()){
+    echo "session ended for that user. testing only.";
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -78,8 +88,8 @@ if(isset($_GET['delete_user'])){
 <script>
 
 function loadSessions(){
-  fetch_sessions()
-    .then(res->res.text())
+  fetch('fetch_sessions.php')
+    .then(res=>res.text())
     .then(data =>{
       document.getElementById('sessionTable').innerHTML = data;
     })
@@ -88,6 +98,9 @@ function loadSessions(){
       document.getElementById('sessionTable').innerHTML = '<tr><td colspan = "7"> Failed to load session data.</td></tr>';
     });
   }
+
+loadSessions();
+setInterval(loadSessions, 2000); //calls the function every 2 secs
 </script>
 
   <div>

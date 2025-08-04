@@ -21,9 +21,9 @@ if(isset($_GET['end'])){
   if($result->num_rows >0){
     $row = $result ->fetch_assoc();
     
-    if($row['status'] == 'in_use'){
+    if($row['st_status'] == 'in_use'){
       $end_time = date("Y-m-d H:i:s");
-      $stmt = $conn->prepare("UPDATE sessions SET status ='ended',end_time = ? WHERE id = ?");
+      $stmt = $conn->prepare("UPDATE sessions SET st_status ='ended',end_time = ? WHERE id = ?");
       $stmt->bind_param("si", $end_time, $row['id']);
       $stmt->execute();
     }
@@ -96,7 +96,7 @@ if($checkResult->num_rows === 0){
 }
 
 //check if study table is in use
-$checkST = $conn->prepare("SELECT * FROM sessions WHERE study_table = ? AND status = 'in_use'");  //finds study table passed that is in use
+$checkST = $conn->prepare("SELECT * FROM sessions WHERE study_table = ? AND st_status = 'in_use'");  //finds study table passed that is in use
 $checkST->bind_param("s", $studytable);
 $checkST->execute();
 $result_check_st = $checkST->get_result();
@@ -115,7 +115,7 @@ if($result_check_st->num_rows > 0){ //if any exists
 $start = date("Y-m-d H:i:s");
 $status = 'in_use';
 //insert form info to sql
-$stmt = $conn->prepare("INSERT INTO sessions (username, time_plan, study_table, start_time, status) VALUES (?,?,?,?,?)");
+$stmt = $conn->prepare("INSERT INTO sessions (username, time_plan, study_table, start_time, st_status) VALUES (?,?,?,?,?)");
 $stmt->bind_param("sssss", $user, $plan, $studytable, $start, $status);
 
 //display of running timer
@@ -143,7 +143,7 @@ if ($stmt->execute()){
   </div>
 
   <script>
-      function startTimer(durationMinutes, sessionId){
+      function startTimer(durationMins, sessionId){
         let time = durationMins * 60;
         const timerDisplay = document.getElementById("timer");
 
@@ -167,7 +167,7 @@ if ($stmt->execute()){
           fetch(`check_sessions.php?id=${sessionId}`)
             .then(res => res.json())
             .then(data=>{
-              if (data.status === "ended"){
+              if (data.st_status === "ended"){
                 clearInterval(countdown);
                 clearInterval(checkSession);
                 fetch("user.php?end=" + sessionId)
@@ -179,7 +179,7 @@ if ($stmt->execute()){
             })
         }, 2000);
       }
-        startTimer(<?= $planMins?>, <?$sessionId?>)
+        startTimer(<?= $planMins?>, <?=$sessionId?>)
   </script>
 
 </body>

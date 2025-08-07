@@ -7,7 +7,10 @@ if(!isset($_GET['id'])){
 }
 
 $sessionId = intval($_GET['id']);
-$res = $conn->query("SELECT st_status FROM sessions WHERE id = $sessionId");
+$stmt = $conn->prepare("SELECT st_status FROM sessions WHERE id = ?");
+$stmt->bind_param("i", $sessionId);
+$stmt->execute();
+$res = $stmt->get_result();
 
 if($res && $row = $res->fetch_assoc()){
   echo json_encode(["st_status" => $row["st_status"]]);

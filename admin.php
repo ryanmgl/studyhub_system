@@ -31,17 +31,27 @@ if(isset($_GET['delete_user'])){
 
 }
 
-if(isset($_GET['end'])){
-  $endId = $_GET['end'];
-  $end_stmt = $conn->prepare("UPDATE sessions SET st_status = 'ended', end_time = NOW() WHERE id = ?");
-  $end_stmt->bind_param("i", $endId);
-  
-  if($end_stmt->execute()){
-    echo "session ended for that user. testing only.";
-  }
-}
+$activeCheck = $conn->query("SELECT COUNT(*) as count FROM sessions WHERE st_status = 'in_use'");
+$resultActiveCheck = $activeCheck->fetch_assoc();
+$hasActive = $resultActiveCheck['count'] > 0;
 ?>
+<script>
+  function endSession(sessionId){
+  if(!confirm("Are you sure you want to end the session?")) return;
 
+  fetch('user.php?end=' + sessionId) //default of fetch is $_get
+    .then(response => response.text())
+    .then(data => {
+      alert("Session ended.");
+      loadSessions();
+    })
+    .catch(err => {
+      alert("Failed to end session.");
+      console.error(err);
+    });
+}
+
+</script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -77,6 +87,7 @@ if(isset($_GET['end'])){
         <th>Study Table</th>
         <th>Time Remaining</th>
         <th>End</th>
+        <th>Action</th>
       </tr>
       </thead>
       <tbody id ='sessionTable'>
@@ -100,7 +111,7 @@ function loadSessions(){
   }
 
 loadSessions();
-setInterval(loadSessions, 2000); //calls the function every 2 secs
+setInterval(loadSessions, 5000); //calls the function every 2 secs
 </script>
 
   <div>
@@ -132,6 +143,9 @@ setInterval(loadSessions, 2000); //calls the function every 2 secs
     </table>
   </div>
 </div>
-
+<br>
+<form method="post" action="generate_report.php" style="margin-bottom: 20px;">
+    <button type="submit">Generate Daily Report</button>
+</form>
 </body>
 </html>

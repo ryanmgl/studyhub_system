@@ -10,7 +10,7 @@ $sessionId = null;
 if($conn->connect_error){
   die("Connection failed: ".$conn->connect_error);
 }
-
+//end a session
 if(isset($_GET['end'])){
   $sessionId = $_GET['end'];
   $stmt = $conn->prepare("SELECT * FROM sessions WHERE id = ?");
@@ -46,16 +46,17 @@ if(isset($_GET['end'])){
     $typeRow = $typeRow->fetch_assoc();
     $userType = $typeRow ? $typeRow['type'] : 'basic';
 
-    $rate = ($userType =='basic')? 0.5 : 0.4;
-    $cost = $elapsed * $rate;
-
+    $rate = ($userType =='basic')? 0.5 : 0.4; 
+    if($elapsed < 1) $elapsed += 1;
+    $cost = ceil($elapsed * $rate); //ensures whole number payment
+    
     $receipt ="
     <!DOCTYPE html>
     <html lang = 'en'> 
     <head>  
       <meta charset = 'UTF-8'>
       <title> Receipt</title>
-      <link rel = 'stylesheet' href = 'style_user. css'>
+      <link rel = 'stylesheet' href = 'style_user.css'>
     </head>
     <body>
       <div>
@@ -158,13 +159,13 @@ if ($stmt->execute()){
             timerDisplay.innerHTML = "<h3 style ='color:red;'>Session Ended. Time has run out. </h3>";
             setTimeout(()=>{
               window.location.href = "user.php?end=" + sessionId;
-            }, 2000);
+            }, 4000);
           }
           time--;
         }, 1000);
 
         const checkSession = setInterval(() => {
-          fetch(`check_sessions.php?id=${sessionId}`)
+          fetch(`check_session.php?id=${sessionId}`)
             .then(res => res.json())
             .then(data=>{
               if (data.st_status === "ended"){
@@ -177,7 +178,7 @@ if ($stmt->execute()){
                   });
               }
             })
-        }, 2000);
+        }, 5000);
       }
         startTimer(<?= $planMins?>, <?=$sessionId?>)
   </script>
@@ -185,7 +186,6 @@ if ($stmt->execute()){
 </body>
 </html>
 <?php
-  exit;
     }else{
       echo "<p style='color:red;'>Failed to insert session: " . $stmt->error . "</p>";
   }
@@ -229,3 +229,26 @@ if ($sessionEnded) {
   exit;
 }
 ?>
+
+<?php if ($showTimer && $sessionId): ?>
+<script>
+  function startTimer(sessionId){
+    const checkSession = setInterval(() => {
+      fetch(`check_session.php?id=${sessionId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.st_status === 'ended') {
+            clearInterval(checkSession);
+            fetch('user.php?end=' + sessionId)
+              .then(response => response.text())
+              .then(html => {
+                document.body.innerHTML = html;
+              });
+          }
+        });
+    }, 5000);
+  }
+
+  startTimer(<?= $sessionId ?>);
+</script>
+<?php endif; ?>

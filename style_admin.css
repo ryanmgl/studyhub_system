@@ -1,0 +1,149 @@
+html,body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 0;
+}
+
+
+table {
+    border-collapse: collapse;
+    width: 90%;
+    margin: 20px auto;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: center;
+}
+
+table th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+form {
+    margin: 20px auto;
+    text-align: center;
+}
+
+
+input[type="text"], input[type="password"] {
+    padding: 8px;
+    margin: 5px;
+    width: 200px;
+    box-sizing: border-box;
+    display: block;
+}
+
+input[type="submit"] {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    display: block;
+}
+
+input[type="submit"]:hover {
+    background-color: #45a049;
+    box-sizing: border-box;
+    display: block;
+}
+
+hr {
+    margin: 40px auto;
+    width: 90%;
+    border: 1px solid #ccc;
+}
+
+.logout-link {
+    float: right;
+    margin: 10px 20px;
+    text-decoration: none;
+    color: #d00;
+    font-weight: bold;
+}
+
+.login-page {
+    position: relative;
+    z-index:1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: url('https://i.pinimg.com/originals/12/94/04/1294041653fa15f726f444d8f05b2291.gif') no-repeat center center fixed; /* All credit to the original creator. Gif is not in any way owned by me. */
+    background-size:cover;  
+    margin: 0;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    padding: 30px 40px;
+    text-align: center;
+    color: white;
+}
+
+.login-container input[type="text"], /*glass effect and stack vertically*/
+.login-container input[type="password"],
+.login-container input[type="submit"] {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px auto;
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+}
+
+.login-container input::placeholder {
+    color: #eee;
+}
+
+.login-container h1, .login-container p {
+    color: white;
+}
+
+.error {
+    color: red;
+}
+
+select[name="user_type"] {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+select[name="user_type"]:hover {
+    background-color: #f9f9f9;
+}
+
+button[type="submit"] {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+button[type="submit"]:hover {
+    background-color: #45a049;
+}

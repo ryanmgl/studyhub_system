@@ -27,18 +27,23 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <!DOCTYPE html>
 <html>
 <head>
-  <title> Study Hub Admin Login</title>
-  <link rel = "stylesheet" href ="style_admin.css">
-</head>
-<body>
-  <?php if (isset($error)) echo "<p>$error</p>"?>
-  <form class = "login" method = "post">
-    <h1>Study Hub Admin Login</h1>
-    <input type = "text" name = "username" placeholder="Username" required>
-    <input type = "password" name = "password" placeholder="Password" required>
-    <input type = "submit" value = "Login">
-
-</form>
+    <title> Study Hub Admin Login</title>
+    <link rel = "stylesheet" href ="style_admin.css">
+  </head>
+  <body>
+    <div class = "login-page">
+      <div class = "login-container">
+    <?php if (isset($error)) echo "<p>$error</p>"?>
+        <form class = "login" method = "post">
+          <h1>Study Hub Admin Login</h1>
+          
+            <input type = "text" name = "username" placeholder="Username" required>
+            <input type = "password" name = "password" placeholder="Password" required>
+            <input type = "submit" value = "Login">
+          
+        </form>
+  </div>
+</div>
 </body>
 
 </html>

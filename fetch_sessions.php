@@ -9,7 +9,7 @@ $query = $conn->query("
           SELECT s.*,u.type
           FROM sessions s
           LEFT JOIN users u ON s.username = u.username
-          WHERE st_status = 'in_use'
+          WHERE s.st_status = 'in_use'
           ");
 
 if($query->num_rows == 0){
@@ -39,9 +39,9 @@ if($query->num_rows == 0){
   echo "<td>". htmlspecialchars($row['type']). "</td>";
   echo "<td>". htmlspecialchars($row['time_plan'])."mins. </td>";
   echo "<td>". htmlspecialchars($row['study_table']). "</td>";
-  echo "<td>". $row['start_time']. "</td>";
+  echo "<td>". htmlspecialchars($row['start_time']). "</td>";
   echo "<td>{$time_left}</td>";
-  echo "<td> <a href='admin.php?end=".$row['id']."' onclick = 'return confirm(\"Are you sure you want to end the session?\")'>End</a></td>";
+  echo "<td><a href='#' onclick='endSession(". $row['id'] . "); return false;'>End</a> </td>";
   echo "</tr>";
   }
 }
